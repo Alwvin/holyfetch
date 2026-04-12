@@ -1,0 +1,146 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"math/rand"
+	"net/http"
+	"strings"
+)
+
+type Gospel struct {
+	Id         int
+	Version    string
+	Verse_Name string
+	Verse_Text string
+}
+
+func main() {
+	resp, err := http.Get("https://raw.githubusercontent.com/Alwvin/QURAN_AND_GOSPEL_API/refs/heads/main/json/gospel/matius_tb.json")
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		panic("API request failed with status: " + resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	var matius_tb []Gospel
+	err = json.Unmarshal(body, &matius_tb)
+	if err != nil {
+		panic(err)
+	}
+
+	// random ayat
+	random := rand.Intn(len(matius_tb))
+
+	// ASCII (inverted cross)
+	ascii := `
+        ██
+        ██
+		██
+ ████████████████
+        ██
+        ██
+        ██
+		██
+		██
+		██
+		██
+		██
+`
+
+	// header
+	header := matius_tb[random].Verse_Name + " " + matius_tb[random].Version
+
+	// 🔥 CLEAN TEXT (fix tab & newline aneh)
+	cleanText := matius_tb[random].Verse_Text
+	cleanText = strings.ReplaceAll(cleanText, "\t", " ")
+	cleanText = strings.ReplaceAll(cleanText, "\r", "")
+	cleanText = strings.ReplaceAll(cleanText, "\n", " ")
+	cleanText = strings.ReplaceAll(cleanText, "⠀", "")
+	cleanText = strings.TrimSpace(cleanText)
+
+	// split ASCII
+	asciiLines := strings.Split(ascii, "\n")
+	for i := range asciiLines {
+		asciiLines[i] = strings.ReplaceAll(asciiLines[i], "\t", "    ")
+	}
+
+	// wrap text
+	rightWidth := 40
+	wrappedVerse := wrapText(cleanText, rightWidth)
+
+	// gabung header + isi
+	textLines := []string{header, ""}
+	textLines = append(textLines, wrappedVerse...)
+
+	// panjang maksimal
+	maxLines := max(len(asciiLines), len(textLines))
+	// 🔥 CENTER ASCII (vertical)
+	topPadding := (len(textLines) - len(asciiLines)) / 2
+	if topPadding < 0 {
+		topPadding = 0
+	}
+
+	// 🔥 FIX WIDTH kiri (biar ga geser)
+	leftWidth := 28
+
+	for i := 0; i < maxLines; i++ {
+		left := ""
+		right := ""
+
+		// 🔥 SHIFT ASCII KE TENGAH
+		asciiIndex := i - topPadding
+		if asciiIndex >= 0 && asciiIndex < len(asciiLines) {
+			left = asciiLines[asciiIndex]
+		}
+
+		if i < len(textLines) {
+			right = textLines[i]
+		}
+
+		paddedLeft := fmt.Sprintf("%-*s", leftWidth, left)
+		fmt.Printf("%s | %s\n", paddedLeft, right)
+	}
+}
+
+// wrap text biar auto turun
+func wrapText(text string, width int) []string {
+	words := strings.Fields(text)
+	var lines []string
+	current := ""
+
+	for _, word := range words {
+		if len(current)+len(word)+1 > width {
+			lines = append(lines, current)
+			current = word
+		} else {
+			if current != "" {
+				current += " "
+			}
+			current += word
+		}
+	}
+
+	if current != "" {
+		lines = append(lines, current)
+	}
+
+	return lines
+}
+
+// helper max
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
