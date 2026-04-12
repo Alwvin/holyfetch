@@ -17,7 +17,7 @@ type Gospel struct {
 }
 
 func main() {
-	resp, err := http.Get("https://raw.githubusercontent.com/Alwvin/QURAN_AND_GOSPEL_API/refs/heads/main/json/gospel/matius_tb.json")
+	resp, err := http.Get("your_bible.json")
 	if err != nil {
 		panic(err)
 	}
