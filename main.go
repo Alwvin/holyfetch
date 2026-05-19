@@ -38,10 +38,8 @@ func main() {
 		panic(err)
 	}
 
-	// random ayat
 	random := rand.Intn(len(matius_tb))
 
-	// ASCII (inverted cross)
 	ascii := `
         ██
         ██
@@ -57,10 +55,8 @@ func main() {
 		██
 `
 
-	// header
 	header := matius_tb[random].Verse_Name + " " + matius_tb[random].Version
 
-	// 🔥 CLEAN TEXT (fix tab & newline aneh)
 	cleanText := matius_tb[random].Verse_Text
 	cleanText = strings.ReplaceAll(cleanText, "\t", " ")
 	cleanText = strings.ReplaceAll(cleanText, "\r", "")
@@ -68,36 +64,29 @@ func main() {
 	cleanText = strings.ReplaceAll(cleanText, "⠀", "")
 	cleanText = strings.TrimSpace(cleanText)
 
-	// split ASCII
 	asciiLines := strings.Split(ascii, "\n")
 	for i := range asciiLines {
 		asciiLines[i] = strings.ReplaceAll(asciiLines[i], "\t", "    ")
 	}
 
-	// wrap text
 	rightWidth := 40
 	wrappedVerse := wrapText(cleanText, rightWidth)
 
-	// gabung header + isi
 	textLines := []string{header, ""}
 	textLines = append(textLines, wrappedVerse...)
 
-	// panjang maksimal
 	maxLines := max(len(asciiLines), len(textLines))
-	// 🔥 CENTER ASCII (vertical)
 	topPadding := (len(textLines) - len(asciiLines)) / 2
 	if topPadding < 0 {
 		topPadding = 0
 	}
 
-	// 🔥 FIX WIDTH kiri (biar ga geser)
 	leftWidth := 28
 
 	for i := 0; i < maxLines; i++ {
 		left := ""
 		right := ""
 
-		// 🔥 SHIFT ASCII KE TENGAH
 		asciiIndex := i - topPadding
 		if asciiIndex >= 0 && asciiIndex < len(asciiLines) {
 			left = asciiLines[asciiIndex]
@@ -112,7 +101,6 @@ func main() {
 	}
 }
 
-// wrap text biar auto turun
 func wrapText(text string, width int) []string {
 	words := strings.Fields(text)
 	var lines []string
@@ -137,7 +125,6 @@ func wrapText(text string, width int) []string {
 	return lines
 }
 
-// helper max
 func max(a, b int) int {
 	if a > b {
 		return a
